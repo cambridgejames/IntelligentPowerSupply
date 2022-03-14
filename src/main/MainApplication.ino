@@ -4,6 +4,7 @@
 #include <Arduino.h>
 
 #include "controller/Controller.h"
+#include "util/TimeUtil.hpp"
 
 // #define eunmToString(x) #x
 LiquidCrystal lcd(7, 6, 5, 4, 3, 2);
@@ -37,16 +38,16 @@ void initIfConfig(Stream& serial) {
     String ip = "";
     while(serial.available() > 0) {
         int current = serial.read();
-        ip += String(current) + ".";
+        ip += "." + String(current);
         delay(2);
     }
-    lcd.print(ip);
-    serial.println(ip);
+    lcd.print(ip.substring(1));
+    serial.println(ip.substring(1));
 }
 
 void loop() {
     lcd.setCursor(0, 1);
-    lcd.print(millis());
+    lcd.print("UpTime: " + TimeUtil::getTime());
 
     // Serial.println("Http server loop.");
     // ArduinoHttpServer::StreamHttpRequest<1024> httpRequest(Serial);
