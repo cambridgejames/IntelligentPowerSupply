@@ -1,18 +1,18 @@
-#ifndef _CONTROLLER_H_
-#define _CONTROLLER_H_
+#ifndef _HTTP_CONTROLLER_H_
+#define _HTTP_CONTROLLER_H_
 
 enum class HttpRequestMethod {
     GET, POST, PUT, DELET, PATCH
 };
 
-class Controller {
+class HttpController {
 private:
     String controllerName;
     String httpCommand;
 
 public:
-    Controller(String controllerName);
-    ~Controller();
+    HttpController(String controllerName);
+    ~HttpController();
 
     String getControllerName();
     void printController(Stream& stream);
@@ -23,6 +23,6 @@ private:
 
 };
 
-#include "Controller.cpp"
+#include "HttpController.cpp"
 
-#endif // End for _CONTROLLER_H_
+#endif // End for _HTTP_CONTROLLER_H_

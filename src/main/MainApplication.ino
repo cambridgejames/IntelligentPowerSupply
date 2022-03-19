@@ -3,7 +3,7 @@
 
 #include <Arduino.h>
 
-#include "controller/Controller.h"
+#include "controller/HttpController.h"
 #include "util/TimeUtil.hpp"
 
 // #define eunmToString(x) #x
@@ -16,7 +16,7 @@ void setup() {
     Serial.begin(115200, SERIAL_8N1);
     // Serial.println("Http server started.");
 
-    Controller *controller = new Controller("Test Controller");
+    HttpController *controller = new HttpController("Test Controller");
     // controller->printController(Serial);
 
     initIfConfig(Serial);
