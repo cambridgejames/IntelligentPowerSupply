@@ -46,7 +46,7 @@ public:
 
 private:
     unsigned char* sendMessage(AtCommandSpace::AtCommandCode commandCode, bool isRead);
-    bool waitForResponse(void);
+    bool sendMessage(const unsigned char* requestCommand, unsigned short commandLength);
 };
 
 #include "AtServer.cpp"

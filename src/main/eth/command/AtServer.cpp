@@ -51,9 +51,7 @@ unsigned char* AtServer::sendMessage(AtCommandSpace::AtCommandCode commandCode, 
     memmove(requestCommand + AtServer::AT_COMMAND_LENGTH - 2, commandCodeRange, sizeof(commandCodeRange));
 
     // 发送命令
-    serial.flush();
-    this->serial.write(requestCommand, AtServer::AT_COMMAND_LENGTH);
-    if (!AtServer::waitForResponse()) {
+    if (!this->sendMessage(requestCommand, AtServer::AT_COMMAND_LENGTH)) {
         return nullptr;
     }
     unsigned char responseLength = commandCodeRange[1];
@@ -71,18 +69,24 @@ unsigned char* AtServer::sendMessage(AtCommandSpace::AtCommandCode commandCode, 
 }
 
 /**
- * 等待设备发送返回值
+ * 发送命令并等待设备发送返回值
  *
- * @return true 设备在规定时间内成功返回
+ * @param requestCommand AT命令
+ * @param commandLength 命令长度
+ * @return true 设备在规定的超时时间和重试次数内成功返回
  * @return false 设备返回超时
  */
-bool AtServer::waitForResponse() {
-    unsigned long startTime = TimeUtil::getTimeMills();
-    while (TimeUtil::getTimeMills() - startTime <= timeoutMills) {
-        if (serial.available() > 0) {
-            return true;
+bool AtServer::sendMessage(const unsigned char* requestCommand, unsigned short commandLength) {
+    for (unsigned short retry = 0; retry < this->retryTimes; retry++) {
+        serial.flush();
+        this->serial.write(requestCommand, AtServer::AT_COMMAND_LENGTH);
+        unsigned long startTime = TimeUtil::getTimeMills();
+        while (TimeUtil::getTimeMills() - startTime <= timeoutMills) {
+            if (serial.available() > 0) {
+                return true;
+            }
+            delay(BETWEEN_CHAR_TIMEOUT_MILLS);
         }
-        delay(BETWEEN_CHAR_TIMEOUT_MILLS);
     }
     return false;
 }
@@ -94,7 +98,7 @@ bool AtServer::waitForResponse() {
  */
 String AtServer::getLocalIpAddr() {
     AtCommandSpace::AtCommandCode commandCode = AtCommandSpace::AtCommandCode::LOCAL_IP_ADDR_RANGE;
-    unsigned char* response = sendMessage(commandCode, true);
+    unsigned char* response = this->sendMessage(commandCode, true);
     if (response == nullptr) {
         return "";
     }
