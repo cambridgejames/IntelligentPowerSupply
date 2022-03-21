@@ -1,5 +1,5 @@
-#ifndef _AT_COMMAND_CPP_
-#define _AT_COMMAND_CPP_
+#ifndef _AT_SERVER_CPP_
+#define _AT_SERVER_CPP_
 
 namespace AtCommandSpace {
     // 机器识别码
@@ -18,10 +18,18 @@ namespace AtCommandSpace {
     };
 }
 
-#include "AtCommand.h"
+#include "AtServer.h"
 #include "../../util/TimeUtil.hpp"
 
-AtCommand::AtCommand(Stream& serial): serial(serial) {
+/**
+ * @brief Construct a new At Command:: At Command object
+ * 
+ * @param timeoutMills 
+ * @param retryTimes 
+ * @param serial 
+ */
+AtServer::AtServer(unsigned int timeoutMills, unsigned short retryTimes, Stream& serial):
+    timeoutMills(timeoutMills), retryTimes(retryTimes), serial(serial) {
 }
 
 /**
@@ -29,25 +37,23 @@ AtCommand::AtCommand(Stream& serial): serial(serial) {
  * 
  * @param commandCode 命令编号
  * @param isRead 只读标志位（true:读, false:写）
- * @param timeoutMills 超时时间
  * @return unsigned char* 返回值，需要手动释放
  */
-unsigned char* AtCommand::sendMessage(AtCommandSpace::AtCommandCode commandCode,
-        bool isRead, unsigned int timeoutMills) {
-    unsigned char requestCommand[AtCommand::AT_COMMAND_LENGTH];
+unsigned char* AtServer::sendMessage(AtCommandSpace::AtCommandCode commandCode, bool isRead) {
+    unsigned char requestCommand[AtServer::AT_COMMAND_LENGTH];
     // 拷贝设备识别码
     memmove(requestCommand, AtCommandSpace::IDENTIFICATION_CODE, sizeof(AtCommandSpace::IDENTIFICATION_CODE));
     // 设置读写标志位
-    requestCommand[AtCommand::AT_COMMAND_LENGTH - 3] = isRead ? AtCommandSpace::READ_CODE : AtCommandSpace::WRITE_CODE;
+    requestCommand[AtServer::AT_COMMAND_LENGTH - 3] = isRead ? AtCommandSpace::READ_CODE : AtCommandSpace::WRITE_CODE;
     // 设置参数
     unsigned char commandCodeRange[2];
     memmove(commandCodeRange, AtCommandSpace::CONFIGURE_ARGS_RANGE[commandCode], sizeof(commandCodeRange));
-    memmove(requestCommand + AtCommand::AT_COMMAND_LENGTH - 2, commandCodeRange, sizeof(commandCodeRange));
+    memmove(requestCommand + AtServer::AT_COMMAND_LENGTH - 2, commandCodeRange, sizeof(commandCodeRange));
 
     // 发送命令
     serial.flush();
-    this->serial.write(requestCommand, AtCommand::AT_COMMAND_LENGTH);
-    if (!AtCommand::waitForResponse(timeoutMills)) {
+    this->serial.write(requestCommand, AtServer::AT_COMMAND_LENGTH);
+    if (!AtServer::waitForResponse()) {
         return nullptr;
     }
     unsigned char responseLength = commandCodeRange[1];
@@ -66,12 +72,11 @@ unsigned char* AtCommand::sendMessage(AtCommandSpace::AtCommandCode commandCode,
 
 /**
  * 等待设备发送返回值
- * 
- * @param timeoutMills 超时时间
+ *
  * @return true 设备在规定时间内成功返回
  * @return false 设备返回超时
  */
-bool AtCommand::waitForResponse(unsigned int timeoutMills) {
+bool AtServer::waitForResponse() {
     unsigned long startTime = TimeUtil::getTimeMills();
     while (TimeUtil::getTimeMills() - startTime <= timeoutMills) {
         if (serial.available() > 0) {
@@ -84,13 +89,12 @@ bool AtCommand::waitForResponse(unsigned int timeoutMills) {
 
 /**
  * 从设备读取IP地址
- * 
- * @param timeoutMills 超时时间
+ *
  * @return String 设备当前的IP地址
  */
-String AtCommand::getLocalIpAddr(unsigned int timeoutMills) {
+String AtServer::getLocalIpAddr() {
     AtCommandSpace::AtCommandCode commandCode = AtCommandSpace::AtCommandCode::LOCAL_IP_ADDR_RANGE;
-    unsigned char* response = sendMessage(commandCode, true, timeoutMills);
+    unsigned char* response = sendMessage(commandCode, true);
     if (response == nullptr) {
         return "";
     }
@@ -105,35 +109,35 @@ String AtCommand::getLocalIpAddr(unsigned int timeoutMills) {
 
 /**
  * 从设备读取子网掩码
- * 
- * @param timeoutMills 超时时间
+ *
  * @return String 设备当前的子网掩码
  */
-String AtCommand::getNetMask(unsigned int timeoutMills) {
-    unsigned char* response = sendMessage(AtCommandSpace::AtCommandCode::NET_MASK_RANGE, true, timeoutMills);
+String AtServer::getNetMask() {
+    unsigned char* response = sendMessage(AtCommandSpace::AtCommandCode::NET_MASK_RANGE, true);
     delete response;
+    return "";
 }
 
 /**
  * 从设备读取网关地址
- * 
- * @param timeoutMills 超时时间
+ *
  * @return String 设备当前的网关地址
  */
-String AtCommand::getGateWay(unsigned int timeoutMills) {
-    unsigned char* response = sendMessage(AtCommandSpace::AtCommandCode::GATE_WAY_RANGE, true, timeoutMills);
+String AtServer::getGateWay() {
+    unsigned char* response = sendMessage(AtCommandSpace::AtCommandCode::GATE_WAY_RANGE, true);
     delete response;
+    return "";
 }
 
 /**
  * 从设备读取端口号
- * 
- * @param timeoutMills 超时时间
+ *
  * @return String 设备当前监听的端口号
  */
-String AtCommand::getLocalIpPort(unsigned int timeoutMills) {
-    unsigned char* response = sendMessage(AtCommandSpace::AtCommandCode::LOCAL_IP_PORT_RANGE, true, timeoutMills);
+String AtServer::getLocalIpPort() {
+    unsigned char* response = sendMessage(AtCommandSpace::AtCommandCode::LOCAL_IP_PORT_RANGE, true);
     delete response;
+    return "";
 }
 
-#endif // End for _AT_COMMAND_CPP_
+#endif // End for _AT_SERVER_CPP_

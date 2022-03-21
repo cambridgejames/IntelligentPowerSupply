@@ -2,13 +2,13 @@
 
 #include <Arduino.h>
 
-#include "eth/command/AtCommand.h"
+#include "eth/command/AtServer.h"
 #include "controller/HttpController.h"
 #include "util/TimeUtil.hpp"
 
 // #define eunmToString(x) #x
 LiquidCrystal lcd(7, 6, 5, 4, 3, 2);
-AtCommand atCommand(Serial);
+AtServer atServer(Serial);
 
 void setup() {
     Serial.begin(115200, SERIAL_8N1);
@@ -16,7 +16,7 @@ void setup() {
     lcd.print("Booting...");
 
     unsigned long startTime = TimeUtil::getTimeMills();
-    String ipAddr = atCommand.getLocalIpAddr();
+    String ipAddr = atServer.getLocalIpAddr();
     unsigned long timeCost = TimeUtil::getTimeMills() - startTime;
     lcd.setCursor(0, 0);
     lcd.print(ipAddr.length() == 0 ? "Timed out." : ipAddr);
