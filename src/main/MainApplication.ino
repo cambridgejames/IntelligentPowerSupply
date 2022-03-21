@@ -21,6 +21,11 @@ void setup() {
     lcd.setCursor(0, 0);
     lcd.print(ipAddr.length() == 0 ? "Timed out." : ipAddr);
 
+    // Serial.println(atServer.getLocalIpAddr());
+    // Serial.println(atServer.getNetMask());
+    // Serial.println(atServer.getGateWay());
+    // Serial.println(atServer.getLocalIpPort());
+
     lcd.setCursor(0, 1);
     lcd.print(timeCost);
 

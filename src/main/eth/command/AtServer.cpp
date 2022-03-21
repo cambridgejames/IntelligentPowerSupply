@@ -20,6 +20,7 @@ namespace AtCommandSpace {
 
 #include "AtServer.h"
 #include "../../util/TimeUtil.hpp"
+#include "../../util/NumberUtil.hpp"
 
 /**
  * @brief Construct a new At Command:: At Command object
@@ -116,10 +117,19 @@ String AtServer::getLocalIpAddr() {
  *
  * @return String 设备当前的子网掩码
  */
-String AtServer::getNetMask() {
-    unsigned char* response = sendMessage(AtCommandSpace::AtCommandCode::NET_MASK_RANGE, true);
+short AtServer::getNetMask() {
+    AtCommandSpace::AtCommandCode commandCode = AtCommandSpace::AtCommandCode::NET_MASK_RANGE;
+    unsigned char* response = this->sendMessage(commandCode, true);
+    if (response == nullptr) {
+        return -1;
+    }
+    unsigned short responseLength = AtCommandSpace::CONFIGURE_ARGS_RANGE[commandCode][1];
+    short netMask = 0;
+    for (int i = 0; i < responseLength; i++) {
+        netMask += NumberUtil::bitCount(response[i]);
+    }
     delete response;
-    return "";
+    return netMask;
 }
 
 /**
@@ -128,9 +138,18 @@ String AtServer::getNetMask() {
  * @return String 设备当前的网关地址
  */
 String AtServer::getGateWay() {
-    unsigned char* response = sendMessage(AtCommandSpace::AtCommandCode::GATE_WAY_RANGE, true);
+    AtCommandSpace::AtCommandCode commandCode = AtCommandSpace::AtCommandCode::GATE_WAY_RANGE;
+    unsigned char* response = this->sendMessage(commandCode, true);
+    if (response == nullptr) {
+        return "";
+    }
+    unsigned short responseLength = AtCommandSpace::CONFIGURE_ARGS_RANGE[commandCode][1];
+    String ipAddr = "";
+    for (int i = 0; i < responseLength; i++) {
+        ipAddr += "." + String(response[i]);
+    }
     delete response;
-    return "";
+    return ipAddr.substring(1);
 }
 
 /**
@@ -138,10 +157,20 @@ String AtServer::getGateWay() {
  *
  * @return String 设备当前监听的端口号
  */
-String AtServer::getLocalIpPort() {
-    unsigned char* response = sendMessage(AtCommandSpace::AtCommandCode::LOCAL_IP_PORT_RANGE, true);
+int AtServer::getLocalIpPort() {
+    AtCommandSpace::AtCommandCode commandCode = AtCommandSpace::AtCommandCode::LOCAL_IP_PORT_RANGE;
+    unsigned char* response = sendMessage(commandCode, true);
+    if (response == nullptr) {
+        return -1;
+    }
+    unsigned short responseLength = AtCommandSpace::CONFIGURE_ARGS_RANGE[commandCode][1];
+    int port = 0;
+    for (int i = 0; i < responseLength; i++) {
+        port = port << sizeof(response[i]);
+        port += response[i];
+    }
     delete response;
-    return "";
+    return port;
 }
 
 #endif // End for _AT_SERVER_CPP_

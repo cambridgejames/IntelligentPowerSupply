@@ -33,9 +33,9 @@ public:
     ~AtServer() {}
 
     String getLocalIpAddr(void);
-    String getNetMask(void);
+    short getNetMask(void);
     String getGateWay(void);
-    String getLocalIpPort(void);
+    int getLocalIpPort(void);
 
 public:
     // Getter and Setter
