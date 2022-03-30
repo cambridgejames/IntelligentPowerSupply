@@ -14,9 +14,9 @@ class AtServer {
 
 private:
     // 等待建立TCP连接的默认超时时间
-    static const unsigned int TIMEOUT_MILLS_DEFAULT = 5000;
+    static const unsigned int TIMEOUT_MILLS_DEFAULT = 1000;
     // 超时后默认重试次数
-    static const unsigned short TIMEOUT_RETRY_DEFAULT = 5;
+    static const unsigned short TIMEOUT_RETRY_DEFAULT = 10;
     // 请求命令长度
     static const unsigned short AT_COMMAND_LENGTH = 13;
     // 返回命令字符间最大等待时间
