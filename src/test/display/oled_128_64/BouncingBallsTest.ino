@@ -30,8 +30,12 @@ int getY(unsigned long time, int omega, int height, int radio);
 void setup(void) {
     display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS);
     display.clearDisplay();
+    display.setTextColor(SSD1306_WHITE, SSD1306_BLACK);
+    display.setTextSize(1);
     display.display();
 }
+
+unsigned long timeLastFrame = 0;
 
 /**
  * @brief 循环显示动画帧
@@ -41,9 +45,17 @@ void loop(void) {
     unsigned long time = millis();
     for (int i = 0; i < NUMBER_OF_BALL; i++) {
         display.fillCircle(getX(i + 1, NUMBER_OF_BALL, SCREEN_WIDTH),
-            SCREEN_HEIGHT - getY(time, OMEGA[i], SCREEN_HEIGHT, CIRCLE_RADIO),
+            SCREEN_HEIGHT - getY(time, OMEGA[i], SCREEN_HEIGHT - 2, CIRCLE_RADIO) - 2,
             CIRCLE_RADIO, SSD1306_WHITE);
     }
+    display.drawLine(0, SCREEN_HEIGHT - 1, SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1, SSD1306_WHITE);
+
+    // 计算并显示FPS
+    unsigned long timeAfterFrame = millis();
+    float fps = 1000. / (timeAfterFrame - timeLastFrame);
+    display.setCursor(0,0);
+    display.println("FPS:" + String(fps, 1));
+    timeLastFrame = timeAfterFrame;
     display.display();
 }
 
@@ -56,7 +68,7 @@ void loop(void) {
  * @return int 小球的横坐标
  */
 int getX(int index, int number, int width) {
-    return (int) (((double) (width * index)) / (number + 1));
+    return (int) (((float) (width * index)) / (number + 1));
 }
 
 /**
@@ -73,8 +85,8 @@ int getY(unsigned long time, int omega, int height, int radio) {
     if (x > omega / 2) {
         x = omega - x;
     }
-    double h = height - 2 * radio;
-    double a = 4 * h / omega / omega;
+    float h = height - 2 * radio;
+    float a = 4 * h / omega / omega;
     return (int) (-a * x * x + h + radio);
 }
 
